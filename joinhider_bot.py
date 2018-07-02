@@ -26,24 +26,17 @@ This bot removes messages about new user joined or left the chat.
 
 *Questions, Feedback*
 
-Support group: [@tgrambots](https://t.me/tgrambots)
+Email: lorien@lorien.name
 
 *Open Source*
 
 The source code is available at [github.com/lorien/joinhider_bot](https://github.com/lorien/joinhider_bot)
 
-*My Other Project*
+*My Other Projects*
 
 [@daysandbox_bot](https://t.me/daysandbox_bot) - bot that fights with spam messages in chat groups
 [@nosticker_bot](https://t.me/nosticker_bot) - bot to delete stickers posted to group
 [@coinsignal_robot](https://t.me/coinsignal_robot) - bot to be notified when price of specific coin reaches the level you have set, also you can use this bot just to see price of coins.
-
-*Donation*
-Ethereum: 0x00D0c93B180452a7c7B70F463aD9D24d9C6d4d61
-Litecoin: LKJ86NwUkoboZyFHQwKPx8X984g3m3MPjC
-Dash: XtGpsphiR2n9Shx9JFAwnuwGmWzSEvmrtU
-UFO coin: CAdfaUR3tqfumoN7vQMVZ98CakyywgwK1L
-PIVX: DSLjmPMHvbU7kEVphpMe9XCBnTpmdaNjJJ
 """
 
 
