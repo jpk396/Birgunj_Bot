@@ -74,6 +74,7 @@ def create_bot(api_token, db):
                 {
                     '$set': {
                         'chat_username': msg.chat.username,
+                        'active_date': datetime.utcnow(),
                     },
                     '$setOnInsert': {
                         'date': datetime.utcnow(),
@@ -113,6 +114,7 @@ def create_bot(api_token, db):
                 {
                     '$set': {
                         'chat_username': msg.chat.username,
+                        'active_date': datetime.utcnow(),
                     },
                     '$setOnInsert': {
                         'date': datetime.utcnow(),
