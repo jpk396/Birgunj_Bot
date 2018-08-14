@@ -61,7 +61,11 @@ def create_bot(api_token, db):
             bot.delete_message(msg.chat.id, msg.message_id)
         except Exception as ex:
             if 'message to delete not found' in str(ex):
-                logging.error('Failed to delete join message: %s' % ex)
+                logging.error('Failed to delete msg: %s', ex)
+                return
+            elif "Bad Request: message can\\'t be deleted" in str(ex):
+                logging.error('Failed to delete msg: %s', ex)
+                return
             else:
                 raise
         for user in msg.new_chat_members:
