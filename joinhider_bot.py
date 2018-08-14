@@ -147,6 +147,7 @@ def setup_logging():
 
 
 def init_bot_with_mode(mode):
+    assert mode in ('test', 'production')
     with open('var/config.json') as inp:
         config = json.load(inp)
     if mode == 'test':

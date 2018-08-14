@@ -4,16 +4,14 @@ import logging
 import uuid
 
 import telebot
-from bottle import Bottle, request, abort, run
+from bottle import request, abort
 
 from joinhider_bot import init_bot_with_mode
 
-app = Bottle()
 
-
-def setup_web_app():
+def setup_web_app(app, mode):
     logging.basicConfig(level=logging.DEBUG)
-    bot = init_bot_with_mode('production')
+    bot = init_bot_with_mode(mode)
 
     secret_key = str(uuid.uuid4())
 
@@ -29,10 +27,3 @@ def setup_web_app():
 
     bot.remove_webhook()
     bot.set_webhook(url='https://telebot.grablab.org/joinhider_bot/%s/' % secret_key)
-
-
-setup_web_app()
-
-
-if __name__ == '__main__':
-    run(app, host='localhost', port=8888)
