@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import re
 
 import telebot
+import telebot.util
 
 from database import connect_db
 
@@ -46,7 +47,8 @@ class InvalidCommand(Exception):
 
 
 def create_bot(api_token, db):
-    bot = telebot.TeleBot(api_token)
+    bot = telebot.TeleBot(api_token, threaded=True)
+    bot.worker_pool = telebot.util.ThreadPool(num_threads=8)
 
     @bot.message_handler(commands=['start', 'help'])
     def handle_start_help(msg):
