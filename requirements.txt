@@ -1,5 +1,5 @@
-pytelegrambotapi
 runscript
 bottle
 gunicorn
 pymongo
+python-telegram-bot
