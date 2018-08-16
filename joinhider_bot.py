@@ -56,9 +56,25 @@ class JoinhiderBot(TgramRobot):
     def build_user_name(self, user):
         return user.username or ('#%d' % user.id)
 
+    def remember_user(self, msg):
+        update = {
+            '_id': msg.from_user.id,
+            'seen_date': datetime.utcnow(),
+            'data': msg.from_user.to_dict(),
+        }
+        update_insert = {
+            'first_seen_date': datetime.utcnow(),
+        }
+        self.db.user.find_one_and_update(
+            {'_id': update['_id']},
+            {'$set': update, '$setOnInsert': update_insert},
+            upsert=True,
+        )
+
     def handle_start_help(self, bot, update):
         msg = update.effective_message
         if msg.chat.type == 'private':
+            self.remember_user(msg)
             bot.send_message(
                 chat_id=msg.chat.id,
                 text=HELP,
