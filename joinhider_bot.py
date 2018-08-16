@@ -7,8 +7,10 @@ from argparse import ArgumentParser
 from datetime import datetime, timedelta
 import re
 
-import telebot
-import telebot.util
+from telegram import ParseMode
+from telegram.ext import CommandHandler, MessageHandler, Filters, RegexHandler
+from tgram import TgramRobot, run_polling
+from telegram import ParseMode
 
 from database import connect_db
 
@@ -46,30 +48,42 @@ class InvalidCommand(Exception):
     pass
 
 
-def create_bot(api_token, db):
-    bot = telebot.TeleBot(api_token, threaded=True)
-    bot.worker_pool = telebot.util.ThreadPool(num_threads=8)
+class JoinhiderBot(TgramRobot):
 
-    @bot.message_handler(commands=['start', 'help'])
-    def handle_start_help(msg):
+    def before_start_processing(self):
+        self.db = connect_db()
+
+    def build_user_name(self, user):
+        return user.username or ('#%d' % user.id)
+
+    def handle_start_help(self, bot, update):
+        msg = update.effective_message
         if msg.chat.type == 'private':
-            bot.send_message(msg.chat.id, HELP, parse_mode='Markdown', disable_web_page_preview=True)
+            bot.send_message(
+                chat_id=msg.chat.id,
+                text=HELP,
+                parse_mode=ParseMode.MARKDOWN,
+                disable_web_page_preview=True
+            )
 
-    @bot.message_handler(content_types=['new_chat_members'])
-    def handle_new_chat_member(msg):
+    def handle_new_chat_members(self, bot, update):
+        msg = update.effective_message
         try:
-            bot.delete_message(msg.chat.id, msg.message_id)
+            bot.delete_message(
+                chat_id=msg.chat.id,
+                message_id=msg.message_id,
+            )
         except Exception as ex:
-            if 'message to delete not found' in str(ex):
+            if 'Message to delete not found' in str(ex):
                 logging.error('Failed to delete msg: %s', ex)
                 return
-            elif "Bad Request: message can\\'t be deleted" in str(ex):
+            elif "Message can't be deleted" in str(ex):
                 logging.error('Failed to delete msg: %s', ex)
                 return
             else:
                 raise
         for user in msg.new_chat_members:
-            db.chat.find_one_and_update(
+            self.db.chat.find_one_and_update(
                 {'chat_id': msg.chat.id},
                 {
                     '$set': {
@@ -82,7 +96,7 @@ def create_bot(api_token, db):
                 },
                 upsert=True,
             )
-            db.joined_user.find_one_and_update(
+            self.db.joined_user.find_one_and_update(
                 {
                     'chat_id': msg.chat.id,
                     'user_id': user.id,
@@ -95,83 +109,68 @@ def create_bot(api_token, db):
                 upsert=True,
             )
             logging.debug('Removed join message for user %s at chat %d' % (
-                user.username or '#%d' % user.id,
+                self.build_user_name(user),
                 msg.chat.id
             ))
 
-    @bot.message_handler(content_types=['left_chat_member'])
-    def handle_left_chat_member(msg):
+    def handle_left_chat_member(self, bot, update):
+        msg = update.effective_message
         try:
-            bot.delete_message(msg.chat.id, msg.message_id)
+            bot.delete_message(
+                chat_id=msg.chat.id,
+                message_id=msg.message_id,
+            )
         except Exception as ex:
-            if 'message to delete not found' in str(ex):
+            if 'Message to delete not found' in str(ex):
                 logging.error('Failed to delete join message: %s' % ex)
+                return
+            elif "Message can't be deleted" in str(ex):
+                logging.error('Failed to delete msg: %s', ex)
+                return
             else:
                 raise
-        for user in [msg.left_chat_member]:
-            db.chat.find_one_and_update(
-                {'chat_id': msg.chat.id},
-                {
-                    '$set': {
-                        'chat_username': msg.chat.username,
-                        'active_date': datetime.utcnow(),
-                    },
-                    '$setOnInsert': {
-                        'date': datetime.utcnow(),
-                    },
-                },
-                upsert=True,
-            )
-            db.left_user.find_one_and_update(
-                {
-                    'chat_id': msg.chat.id,
-                    'user_id': user.id,
-                },
-                {'$set': {
+        user = msg.left_chat_member
+        self.db.chat.find_one_and_update(
+            {'chat_id': msg.chat.id},
+            {
+                '$set': {
                     'chat_username': msg.chat.username,
-                    'user_username': user.username,
+                    'active_date': datetime.utcnow(),
+                },
+                '$setOnInsert': {
                     'date': datetime.utcnow(),
-                }},
-                upsert=True,
-            )
-            logging.debug('Removed left message for user %s at chat %d' % (
-                user.username or '#%d' % user.id,
-                msg.chat.id
-            ))
+                },
+            },
+            upsert=True,
+        )
+        self.db.left_user.find_one_and_update(
+            {
+                'chat_id': msg.chat.id,
+                'user_id': user.id,
+            },
+            {'$set': {
+                'chat_username': msg.chat.username,
+                'user_username': user.username,
+                'date': datetime.utcnow(),
+            }},
+            upsert=True,
+        )
+        logging.debug('Removed left message for user %s at chat %d' % (
+            self.build_user_name(user),
+            msg.chat.id
+        ))
 
-    return bot
-
-
-def setup_logging():
-    logging.basicConfig(level=logging.DEBUG)
-
-
-def init_bot_with_mode(mode):
-    assert mode in ('test', 'production')
-    with open('var/config.json') as inp:
-        config = json.load(inp)
-    if mode == 'test':
-        token = config['test_api_token']
-    else:
-        token = config['api_token']
-
-    db = connect_db()
-    bot = create_bot(token, db)
-
-    return bot
-
-
-def main():
-    setup_logging()
-    parser = ArgumentParser()
-    parser.add_argument('--mode')
-    opts = parser.parse_args()
-
-    bot = init_bot_with_mode(opts.mode)
-
-    bot.remove_webhook()
-    bot.polling()
-
+    def register_handlers(self, dispatcher):
+        dispatcher.add_handler(CommandHandler(
+            ['start', 'help'], self.handle_start_help
+        ))
+        dispatcher.add_handler(MessageHandler(
+            Filters.status_update.new_chat_members, self.handle_new_chat_members
+        ))
+        dispatcher.add_handler(MessageHandler(
+            Filters.status_update.left_chat_member, self.handle_left_chat_member
+        ))
+        
 
 if __name__ == '__main__':
-    main()
+    run_polling(JoinhiderBot)

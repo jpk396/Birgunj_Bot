@@ -1,13 +1,18 @@
-.PHONY: build venv deps clean
+.PHONY: build build_dev venv venv_dev clean
 
-build: venv deps init
+build: venv init
+
+build_dev: venv_dev init
 
 venv:
-	virtualenv --no-site-packages --python=python3 .env
-	
-deps:
-	.env/bin/pip install -r requirements.txt
+	pipenv --three lock
+	pipenv --three sync
 
+venv_dev:
+	pipenv lock --three
+	pipenv sync --three
+	pipenv install --three --dev
+	
 clean:
 	find -name '*.pyc' -delete
 	find -name '*.swp' -delete
