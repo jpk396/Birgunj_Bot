@@ -176,6 +176,43 @@ class JoinhiderBot(TgramRobot):
             msg.chat.id
         ))
 
+    def handle_stat(self, bot, update):
+        msg = update.effective_message
+        if msg.chat.type != 'private':
+            return
+        else:
+            start = datetime.utcnow().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            stat = []
+            for _ in range(7):
+                end = start + timedelta(days=1)
+                chat_count = self.db.chat.count({
+                    'active_date': {
+                        '$gte': start,
+                        '$lt': end,
+                    }
+                })
+                user_count = self.db.joined_user.count({
+                    'date': {
+                        '$gte': start,
+                        '$lt': end,
+                    }
+                })
+                stat.insert(0, (chat_count, user_count))
+                start -= timedelta(days=1)
+            out = '*Recent 7 days stats*\n'
+            out += '\n'
+            out += 'Chats:\n'
+            out += '  %s\n' % ' | '.join([str(x[0]) for x in stat])
+            out += 'Users:\n'
+            out += '  %s\n' % ' | '.join([str(x[1]) for x in stat])
+            bot.send_message(
+                chat_id=msg.chat.id,
+                text=out,
+                parse_mode=ParseMode.MARKDOWN
+            )
+
     def register_handlers(self, dispatcher):
         dispatcher.add_handler(CommandHandler(
             ['start', 'help'], self.handle_start_help
@@ -186,7 +223,13 @@ class JoinhiderBot(TgramRobot):
         dispatcher.add_handler(MessageHandler(
             Filters.status_update.left_chat_member, self.handle_left_chat_member
         ))
-        
+        dispatcher.add_handler(MessageHandler(
+            Filters.status_update.left_chat_member, self.handle_left_chat_member
+        ))
+        dispatcher.add_handler(CommandHandler(
+            ['stat'], self.handle_stat
+        ))
+
 
 if __name__ == '__main__':
     run_polling(JoinhiderBot)
