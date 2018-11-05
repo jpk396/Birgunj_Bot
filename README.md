@@ -4,7 +4,7 @@ This bot deletes messages about new user joined the chat group
 
 ## Support
 
-* Email: lorien@lorien.name
+* Email: lorien @ lorien . name
 * Use github issues to report bugs: [github issues](https://github.com/lorien/joinhider_bot/issues)
 
 ## My Other projects

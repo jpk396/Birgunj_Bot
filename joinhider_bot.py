@@ -29,7 +29,7 @@ This bot removes messages about new user joined or left the chat.
 
 *Questions, Feedback*
 
-Email: lorien@lorien.name
+Email: lorien @ lorien . name
 
 *Open Source*
 
