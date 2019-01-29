@@ -1,16 +1,15 @@
+## This is obsolete repository
+
+This repository contains a deprecated snapshot of bot's source base. I **keep** maintaining bot, I just closed its sources.
+
+Check out full list of my bots here: [tgdev.io](https://tgdev.io)
+
+Use telegram groups to ask questions or share your thougts:
+
+* [@tgdev_en](https://t.me/tgdev_en) - English speaking group
+* [@tgdev_ru](https://t.me/tgdev_ru) - Russian speaking group
+
+
 ## About joinhider_bot
 
-This bot deletes messages about new user joined the chat group
-
-## Support
-
-* Email: lorien @ lorien . name
-* Use github issues to report bugs: [github issues](https://github.com/lorien/joinhider_bot/issues)
-
-## My Other projects
-
-* [@daysandbox_bot](https://t.me/daysandbox_bot) - bot that fights with spam messages in chat groups
-* [@nosticker_bot](https://t.me/nosticker_bot) - bot to delete stickers posted to group
-* [@coinsignal_robot](https://t.me/coinsignal_robot) - bot to be notified when price of specific coin reaches the level you have set, also you can use this bot just to see price of coins.
-* [@watchdog_robot](https://t.me/watchdog_robot) - bot to delete stickers, file attachments, links, photos, videos and many other types of messages
-* [@lang_blocker_bot](https://t.me/lang_blocker_bot) - bot to delete messages in particular languages configured by chat administrator 
+This bot deletes messages about new user joined or left chatroom
